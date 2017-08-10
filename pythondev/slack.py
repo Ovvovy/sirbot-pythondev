@@ -1,15 +1,21 @@
+import logging
 import asyncio
 import json
 import re
+import pprint
 
 from sirbot.core import registry
 from sirbot.slack.message import SlackMessage, Attachment, Field, Button, \
     Select
 
 
+LOG = logging.getLogger(__name__)
+
+
 class SlackEndpoint:
-    def __init__(self, config):
+    def __init__(self, config, session):
         self.config = config
+        self.session = session
 
         self.config['candy']['user_regex'] = re.compile('<@U.{8}>')
         self.config['candy']['trigger_regex'] = re.compile(
@@ -52,6 +58,8 @@ class SlackEndpoint:
 
         slack.add_command('/moveto', self.move_to)
         # Escape channels, users, and links sent to your app
+
+        slack.add_event('file_comment_added', self.create_gist)
 
     async def hello(self, message, slack, *_):
         response = message.response()
@@ -499,3 +507,18 @@ https://pbs.twimg.com/media/BqBP5KzCUAA_n0X.png'''
             response.text = 'Sorry I can not understand the destination.'
 
         await slack.send(response)
+
+    async def create_gist(self, event, slack):
+        if event['comment']['comment'] == 'create_gist':
+            file = await slack.get_file(event['file_id'])
+            if file['content']:
+                data = {
+                    'public': True,
+                    'description': 'Upload from pyslackers',
+                    'files': {}
+                }
+                data['files']['file.txt'] = {'content': file['content']}
+                github = registry.get('github')
+                LOG.warning(pprint.pformat(data))
+                rep = await github.post('/gists', data=data)
+                LOG.warning(pprint.pformat(rep))

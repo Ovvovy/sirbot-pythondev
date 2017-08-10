@@ -35,7 +35,7 @@ class PythondevPlugin(Plugin):
             GitHubEndpoint(self._config).add()
 
         if 'slack' in registry:
-            SlackEndpoint(self._config).add()
+            SlackEndpoint(self._config, self._session).add()
 
         self._started = True
 
