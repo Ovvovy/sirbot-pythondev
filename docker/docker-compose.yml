@@ -5,11 +5,11 @@ services:
     image: pyslackers/sirbot-pythondev:master
     container_name: sirbot-pythondev
     env_file:
-      - /home/sirbot/.env
+      - /etc/sirbot/.env
     restart: unless-stopped
     ports:
-      - 127.0.0.1:8080:8080
+      - 127.0.0.1:8080:80
     volumes:
-      - /home/sirbot/sirbot/config:/etc/sirbot
-      - /home/sirbot/log:/var/log/sirbot
-      - /home/sirbot/data:/var/lib/sirbot
+      - /etc/sirbot:/etc/sirbot
+      - /var/log/sirbot:/var/log/sirbot
+      - /var/lib/sirbot:/var/lib/sirbot
